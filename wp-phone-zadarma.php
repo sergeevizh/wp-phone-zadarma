@@ -13,7 +13,7 @@ GitHub Branch: master
 
 include_once 'inc/options.php';
 
-//Print Shortcode
+//Print Shortcode and call phone number
 function sc_zadarma_callback($atts) {
 
 	extract( shortcode_atts( array(
@@ -21,18 +21,34 @@ function sc_zadarma_callback($atts) {
 			  'secret' => ''
 		 ), $atts ) );
 
+	 	$from = $_REQUEST['from'];
+		$to = $_REQUEST['to'];
+
+
+	 if(isset($_REQUEST['action'])):
+		 $action = $_REQUEST['action'];
+	 	 if($action != 'sip_zadarma_callback') return "Нет вызова звонка";
+	 	 $respond = zadarma_callback_s($from, $to);
+	 endif;
+
+
 	ob_start();
 	?>
 		<div class="sip_zadarma_callback">
+			<?php
+				if(isset($respond) and ($respond->status == 'success')) {
+					echo "<strong class='label label-success'>Звонок запущен</strong>";
+				}
+			?>
 			<p>Укажите номера в международном формате без +. Например: 78002000000</p>
 			<form type="GET">
 				<div class="form-wrapper">
 					<label for="from_input">Кто звонит</label><br/>
-					<input id="from_input" type="number" name="from" />
+					<input id="from_input" type="number" name="from" value="<?php echo $from ?>" />
 				</div>
 				<div class="to-wrapper">
 					<label for="to_input">Кому звоним</label><br/>
-					<input id="to_input" type="number" name="to" />
+					<input id="to_input" type="number" name="to" value="<?php echo $to ?>"/>
 				</div>
 				<input type="hidden" name="action" value="sip_zadarma_callback" />
 				<br/>
@@ -49,18 +65,6 @@ function sc_zadarma_callback($atts) {
 }
 add_shortcode('sip_zadarma', 'sc_zadarma_callback');
 
-function get_form_data_zadarma_s(){
-	if(isset($_REQUEST['action'])) $action = $_REQUEST['action'];
-	if($action != 'sip_zadarma_callback') return;
-
-	$from = $_REQUEST['from'];
-	$to = $_REQUEST['to'];
-
-	$respond = zadarma_callback_s($from, $to);
-
-}
-add_action('init', 'get_form_data_zadarma_s');
-
 
 //Zadarma Callback
 function zadarma_callback_s($from, $to){
@@ -69,7 +73,7 @@ function zadarma_callback_s($from, $to){
 	$key = get_option( 'zadarma_api_key_s' );
 	define('KEY', $key);
 
-	$secret = 'zadarma_api_secret_s';
+	$secret = get_option('zadarma_api_secret_s');
 	define('SECRET', $secret);
 
 	$params = array(
@@ -80,12 +84,13 @@ function zadarma_callback_s($from, $to){
 	$zd = new \Zadarma_API\Client(KEY, SECRET);
 	$answer = $zd->call('/v1/request/callback/', $params);
 	$answerObject = json_decode($answer);
-	if ($answerObject->status == 'success') {
-	    print_r($answerObject);
-	} else {
-	    echo $answerObject->message;
-	}
 
+	if ($answerObject->status == 'success') {
+	    return $answerObject;
+	} else {
+	    return $answerObject->message;
+	}
+	return;
 }
 
 //Rule for check API Zadarma and generate key
