@@ -2,7 +2,7 @@
 /*
 Plugin Name: WP Phone Zadarma
 Plugin URI: https://github.com/systemo-biz/wp-phone-zadarma
-Description: Shortcode [sip_zadarma key="" secret=""] for callback via Zadarma API https://zadarma.com/ru/support/api/
+Description: Shortcode [sip_zadarma] for callback via Zadarma API https://zadarma.com/ru/support/api/
 Version: 20150808
 License: GPL
 Author: Systemo
