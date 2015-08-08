@@ -11,6 +11,7 @@ GitHub Plugin URI: https://github.com/systemo-biz/wp-phone-zadarma
 GitHub Branch: master
 */
 
+include_once 'inc/options.php';
 
 //Print Shortcode
 function sc_zadarma_callback($atts) {
@@ -62,11 +63,13 @@ add_action('init', 'get_form_data_zadarma_s');
 
 
 //Zadarma Callback
-function zadarma_callback_s($from, $to, $key = '9fb04db34d9c26d3d6cf', $secret = '78b0c58a0b56ed78c38a'){
+function zadarma_callback_s($from, $to){
 
 	include_once 'inc/zadarma-user-api-v1/lib/Client.php';
-
+	$key = get_option( 'zadarma_api_key_s' );
 	define('KEY', $key);
+
+	$secret = 'zadarma_api_secret_s';
 	define('SECRET', $secret);
 
 	$params = array(
